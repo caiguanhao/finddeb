@@ -20,6 +20,7 @@ import (
 func main() {
 	suite := flag.String("suite", "buster", "suite: jessie, stretch, buster, bullseye, sid ...")
 	arch := flag.String("arch", "armhf", "architecture: amd64, arm64, armel, armhf, i386 ...")
+	sarch := flag.String("arch4search", "", "architecture for search, can be 'any', default is the same as -arch")
 	search := flag.Bool("search", false, "search packages by file name")
 	list := flag.Bool("ls", false, "get file lists of packages")
 	dir := flag.String("dir", "", "directory for downloaded files, defaults to <suite>-<arch>")
@@ -40,12 +41,17 @@ func main() {
 
 	args := flag.Args()
 
+	searchArch := *sarch
+	if searchArch == "" {
+		searchArch = *arch
+	}
+
 	if *search {
 		for i, arg := range args {
 			if i > 0 {
 				fmt.Println()
 			}
-			results, err := debpkgapi.SearchPackagesByFile(*suite, *arch, arg)
+			results, err := debpkgapi.SearchPackagesByFile(*suite, searchArch, arg)
 			fmt.Println("Search results for:", arg)
 			if err == nil {
 				for _, result := range results {
@@ -94,7 +100,7 @@ func main() {
 		for _, a := range filesMap[arg] {
 			var err error
 			fmt.Println("Search:", a)
-			packages, err = debpkgapi.SearchPackagesByFile(*suite, *arch, a)
+			packages, err = debpkgapi.SearchPackagesByFile(*suite, searchArch, a)
 			if err != nil {
 				fmt.Printf("\t%s\n", err)
 				continue
